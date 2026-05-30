@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Своя Игра — Викторина с мультимедиа</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0a2f4d 0%, #041f32 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #f0f0f0;
+        }
+
+        .app-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        :root {
+            --radius-sm: 20px;
+            --radius-md: 28px;
+            --radius-lg: 40px;
+            --radius-xl: 56px;
+            --radius-full: 999px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0d2c44e0;
+            backdrop-filter: blur(6px);
+            border-radius: var(--radius-full);
+            padding: 10px 24px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .menu-btn {
+            background: #ffcd7e;
+            font-size: 1.2rem;
+            padding: 10px 24px;
+            border: none;
+            border-radius: var(--radius-full);
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .quiz-name-badge {
+            background: #2c5f7a;
+            padding: 8px 22px;
+            border-radius: var(--radius-full);
+            font-weight: bold;
+        }
+
+        .modal-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-menu-card {
+            background: #fef7e0;
+            color: #1a2a3a;
+            width: 90%;
+            max-width: 500px;
+            border-radius: var(--radius-xl);
+            padding: 28px;
+            box-shadow: 0 20px 40px black;
+            animation: fadeIn 0.2s;
+        }
+        .modal-menu-card h3 {
+            margin-top: 0;
+            color: #c2492d;
+        }
+        .menu-group {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin: 20px 0;
+        }
+        .menu-group button,
+        .menu-group select,
+        .menu-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: var(--radius-full);
+            border: 1px solid #bbb;
+            background: white;
+            font-size: 1rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-card {
+            background: #fef7e0;
+            color: #1a2a3a;
+            max-width: 500px;
+            width: 90%;
+            border-radius: var(--radius-xl);
+            padding: 28px;
+            box-shadow: 0 20px 40px black;
+            animation: fadeIn 0.2s;
+        }
+        .modal-card h3,
+        .modal-card h2 {
+            margin-top: 0;
+            color: #c2492d;
+        }
+        .modal-card input,
+        .modal-card select {
+            width: 100%;
+            padding: 14px 16px;
+            margin: 15px 0;
+            border-radius: var(--radius-full);
+            border: 1px solid #aaa;
+            font-size: 1rem;
+            background: white;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .modal-buttons button {
+            flex: 1 1 auto;
+            padding: 12px 20px;
+            border-radius: var(--radius-full);
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            min-width: 90px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        .teams-panel {
+            background: #073145cc;
+            border-radius: var(--radius-lg);
+            padding: 20px 24px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(4px);
+        }
+        .teams-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .teams-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .team-card {
+            background: #041f2c;
+            border-radius: var(--radius-lg);
+            padding: 16px 22px;
+            min-width: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 4px 12px black;
+            transition: all 0.1s;
+            cursor: pointer;
+            border: 2px solid #3b8db0;
+        }
+        .team-card.active {
+            border: 4px solid #ffb347;
+            background: #0a3e55;
+            box-shadow: 0 0 18px #ffb34780;
+        }
+        .team-name {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .team-score {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+        .team-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+        }
+        .team-actions button {
+            padding: 6px 16px;
+            font-size: 13px;
+            background: #ffcd7e;
+            border: none;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+        }
+
+        .game-grid {
+            background: #0a2f41c9;
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            overflow-x: auto;
+        }
+        .categories-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 6px;
+            text-align: center;
+        }
+        .categories-table th,
+        .categories-table td {
+            border: 2px solid #ffcd7e;
+            padding: 16px 8px;
+            background: #02212e;
+            font-weight: bold;
+            transition: 0.1s;
+            border-radius: var(--radius-md);
+        }
+        .categories-table th {
+            background: #2c5f7a;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .categories-table td {
+            font-size: 1.4rem;
+            cursor: pointer;
+            background: #053b4e;
+        }
+        .categories-table td.used {
+            background: #2b2b2b;
+            color: #888;
+            cursor: not-allowed;
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+        .categories-table td:hover:not(.used) {
+            background: #ffb347;
+            transform: scale(1.02);
+            color: #041f32;
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            margin: 20px 0;
+            background: #f3e5c9;
+            padding: 22px;
+            border-radius: var(--radius-md);
+        }
+        .media-container {
+            margin: 15px 0;
+            text-align: center;
+        }
+        .media-container img,
+        .media-container video {
+            max-width: 100%;
+            max-height: 260px;
+            border-radius: var(--radius-md);
+            box-shadow: 0 4px 12px gray;
+        }
+        .timer-area {
+            background: #222;
+            color: white;
+            padding: 14px;
+            border-radius: var(--radius-full);
+            text-align: center;
+            margin: 18px 0;
+            font-size: 2rem;
+            font-family: monospace;
+            overflow-x: auto;
+            white-space: nowrap;
+            min-width: 150px;
+        }
+        @media (max-width: 500px) {
+            .timer-area { font-size: 1.5rem; }
+        }
+
+        .editor-modal .modal-card {
+            max-width: 1200px;
+            width: 95%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .editor-category {
+            background: #e9dfc7;
+            margin-bottom: 20px;
+            padding: 18px;
+            border-radius: var(--radius-md);
+        }
+        .question-row {
+            background: white;
+            margin: 8px 0;
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        .question-row input {
+            flex: 1 1 110px;
+            padding: 8px 12px;
+            border-radius: var(--radius-full);
+            border: 1px solid #aaa;
+            background: white;
+        }
+        .question-row button {
+            padding: 8px 16px;
+            border-radius: var(--radius-full);
+            background: #ffcd7e;
+            border: none;
+            cursor: pointer;
+        }
+        button {
+            background: #ffcd7e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-full);
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.95rem;
+        }
+        button.danger { background: #e06c6c; color: white; }
+        button.success { background: #2e8b57; color: white; }
+        button.warning { background: #e67e22; color: white; }
+        hr {
+            border: none;
+            height: 2px;
+            background: #ffcd7e;
+            border-radius: 2px;
+            margin: 16px 0;
+            opacity: 0.8;
+        }
+        .info-badge {
+            background: #2c5f7a;
+            border-radius: var(--radius-full);
+            padding: 8px 16px;
+            font-size: 14px;
+            display: inline-block;
+        }
+        #answerReveal {
+            margin-top: 16px;
+            background: #ffe0a3;
+            border-radius: var(--radius-md);
+            padding: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="top-bar">
+        <button id="openMenuBtn" class="menu-btn">☰ Меню</button>
+        <div class="quiz-name-badge" id="currentQuizNameBadge"></div>
+    </div>
+
+    <div id="menuModal" class="modal-menu">
+        <div class="modal-menu-card">
+            <h3>📋 Управление викториной</h3>
+            <div class="menu-group">
+                <label>📚 Выбор викторины:</label>
+                <select id="quizSelectMenu"></select>
+                <button id="newQuizMenuBtn" class="success">➕ Новая викторина</button>
+                <button id="editQuizMenuBtn">✏️ Редактировать</button>
+                <button id="deleteQuizMenuBtn" class="danger">🗑 Удалить</button>
+                <button id="backupMenuBtn" class="success">💾 Резервная копия</button>
+                <button id="restoreMenuBtn" class="warning">📂 Восстановить</button>
+                <hr>
+                <label>⏱ Таймер (сек):</label>
+                <input type="number" id="globalTimerSecMenu" value="30" min="5" max="300" placeholder="Секунды">
+            </div>
+            <div class="modal-buttons">
+                <button id="closeMenuBtn">Закрыть</button>
+            </div>
+            <input type="file" id="restoreFileInput" accept=".json" style="display:none">
+        </div>
+    </div>
+
+    <div class="teams-panel">
+        <div class="teams-header">
+            <strong>👥 КОМАНДЫ</strong>
+            <div>
+                <button id="addTeamBtn">➕ Добавить команду</button>
+                <button id="resetGameProgressBtn" class="warning">🔄 Сброс прогресса</button>
+            </div>
+        </div>
+        <div id="teamsContainer" class="teams-list"></div>
+    </div>
+
+    <div class="game-grid">
+        <table class="categories-table" id="gameTable">
+            <thead id="tableHeader"></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="questionModal" class="modal">
+    <div class="modal-card" style="max-width:750px;">
+        <h3 id="modalCatName">Категория</h3>
+        <div class="question-text" id="modalQuestionText">Вопрос</div>
+        <div class="media-container" id="modalMedia"></div>
+        <div class="timer-area">
+            ⏳ <span id="timerDisplay">00</span> сек
+        </div>
+        <div class="modal-buttons">
+            <button id="startTimerBtn" class="success">▶️ Старт</button>
+            <button id="showAnswerBtn">📖 Ответ</button>
+            <button id="correctAnswerBtn" class="success">✅ Верно</button>
+            <button id="wrongAnswerBtn" class="danger">❌ Неверно</button>
+            <button id="closeModalBtn">✖️ Закрыть</button>
+        </div>
+        <div id="answerReveal" style="display:none;">
+            <strong>Ответ:</strong> <span id="answerText"></span>
+        </div>
+    </div>
+</div>
+
+<div id="editorModal" class="modal editor-modal">
+    <div class="modal-card" style="max-width:1200px; max-height:85vh; overflow-y:auto;">
+        <h2>🎮 Редактор</h2>
+        <label>Название: <input type="text" id="editQuizName" placeholder="Название викторины" style="width:100%"></label>
+        <div id="categoriesEditorContainer"></div>
+        <button id="addCategoryEditorBtn">➕ Добавить категорию</button>
+        <hr>
+        <div class="modal-buttons">
+            <button id="saveQuizBtn" class="success">💾 Сохранить</button>
+            <button id="closeEditorBtn">Отмена</button>
+        </div>
+        <small>Медиа: ссылка (YouTube, .mp4) или загрузите файл (кнопка "Загрузить", до 20 МБ)</small>
+    </div>
+</div>
+
+<div id="customPromptModal" class="modal">
+    <div class="modal-card">
+        <h3 id="promptTitle">Ввод</h3>
+        <input type="text" id="promptInput" placeholder="Введите значение">
+        <div class="modal-buttons">
+            <button id="promptOkBtn">ОК</button>
+            <button id="promptCancelBtn">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<div id="customAlertModal" class="modal">
+    <div class="modal-card">
+        <h3 id="alertTitle">Сообщение</h3>
+        <p id="alertMessage"></p>
+        <div class="modal-buttons">
+            <button id="alertOkBtn">OK</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- ХРАНИЛИЩЕ МЕДИА (IndexedDB) ----------
+    const mediaDB = (() => {
+        const DB_NAME = 'svoya_media_db';
+        const STORE_NAME = 'media';
+        let db = null;
+
+        function open() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, 1);
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    if (!database.objectStoreNames.contains(STORE_NAME)) {
+                        database.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                    }
+                };
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    resolve(db);
+                };
+                request.onerror = (event) => {
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        function ensureDB() {
+            if (db) return Promise.resolve(db);
+            return open();
+        }
+
+        async function saveMedia(id, blob) {
+            await ensureDB();
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const record = { id, blob };
+                const request = store.put(record);
+                request.onsuccess = () => resolve();
+                request.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        async function getMedia(id) {
+            await ensureDB();
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.get(id);
+                request.onsuccess = () => {
+                    resolve(request.result ? request.result.blob : null);
+                };
+                request.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        async function deleteMedia(id) {
+            await ensureDB();
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.delete(id);
+                request.onsuccess = () => resolve();
+                request.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        return { saveMedia, getMedia, deleteMedia, open };
+    })();
+
+    // ---------- ОСНОВНАЯ ЛОГИКА ----------
+    let quizzes = [];
+    let currentQuizId = null;
+    let currentTeams = [];
+    let currentTeamIndex = 0;
+    let activeQuestionData = null;
+    let timerInterval = null;
+    let timerSecondsLeft = 0;
+
+    const STORAGE_QUIZZES = "svoya_quizzes";
+    const STORAGE_SESSION = "svoya_session";
+
+    function customAlert(msg, title = "Сообщение") {
+        return new Promise((resolve) => {
+            const modal = document.getElementById("customAlertModal");
+            document.getElementById("alertTitle").innerText = title;
+            document.getElementById("alertMessage").innerText = msg;
+            modal.style.display = "flex";
+            const okBtn = document.getElementById("alertOkBtn");
+            const handler = () => {
+                modal.style.display = "none";
+                okBtn.removeEventListener("click", handler);
+                resolve();
+            };
+            okBtn.addEventListener("click", handler);
+        });
+    }
+
+    function customPrompt(question, defaultValue = "") {
+        return new Promise((resolve) => {
+            const modal = document.getElementById("customPromptModal");
+            document.getElementById("promptTitle").innerText = question;
+            const input = document.getElementById("promptInput");
+            input.value = defaultValue;
+            modal.style.display = "flex";
+            const okBtn = document.getElementById("promptOkBtn");
+            const cancelBtn = document.getElementById("promptCancelBtn");
+            const onOk = () => {
+                modal.style.display = "none";
+                okBtn.removeEventListener("click", onOk);
+                cancelBtn.removeEventListener("click", onCancel);
+                resolve(input.value);
+            };
+            const onCancel = () => {
+                modal.style.display = "none";
+                okBtn.removeEventListener("click", onOk);
+                cancelBtn.removeEventListener("click", onCancel);
+                resolve(null);
+            };
+            okBtn.addEventListener("click", onOk);
+            cancelBtn.addEventListener("click", onCancel);
+        });
+    }
+
+    function saveQuizzesToLocal() {
+        try {
+            localStorage.setItem(STORAGE_QUIZZES, JSON.stringify(quizzes));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.toString().includes('quota')) {
+                customAlert('Недостаточно места в хранилище браузера. Попробуйте удалить неиспользуемые медиафайлы или старые викторины.', 'Ошибка сохранения');
+            } else {
+                customAlert('Ошибка сохранения данных: ' + e.message, 'Ошибка');
+            }
+        }
+    }
+
+    function loadQuizzes() {
+        const data = localStorage.getItem(STORAGE_QUIZZES);
+        if(data) {
+            try {
+                quizzes = JSON.parse(data);
+            } catch (e) {
+                quizzes = [createDemoQuiz()];
+            }
+        } else {
+            quizzes = [createDemoQuiz()];
+        }
+    }
+
+    function createDemoQuiz() {
+        return {
+            id: Date.now(),
+            name: "🏆 Классическая",
+            categories: [
+                { name: "Кино", questions: [
+                    { value: 100, text: "Какой фильм собрал больше всего 'Оскаров'?", answer: "Бен-Гур / Титаник / Властелин колец (11)", media: "", isUsed: false },
+                    { value: 200, text: "Кто сыграл Джокера в 'Тёмном рыцаре'?", answer: "Хит Леджер", media: "", isUsed: false },
+                    { value: 300, text: "Название корабля из 'Титаника'", answer: "Титаник", media: "", isUsed: false },
+                ]},
+                { name: "География", questions: [
+                    { value: 100, text: "Самая длинная река в мире?", answer: "Нил", media: "", isUsed: false },
+                    { value: 200, text: "Столица Японии", answer: "Токио", media: "", isUsed: false },
+                    { value: 300, text: "Самая высокая гора вне Азии", answer: "Аконкагуа", media: "", isUsed: false },
+                ]}
+            ]
+        };
+    }
+
+    function saveSession() {
+        if(!currentQuizId) return;
+        const quiz = quizzes.find(q => q.id == currentQuizId);
+        if(!quiz) return;
+        const usedStates = quiz.categories.map(cat => cat.questions.map(q => q.isUsed));
+        const sessionData = { currentQuizId, teams: currentTeams, currentTeamIndex, usedStates };
+        try {
+            localStorage.setItem(STORAGE_SESSION, JSON.stringify(sessionData));
+        } catch (e) {
+            console.warn('Could not save session', e);
+        }
+    }
+
+    function loadSession() {
+        const sessRaw = localStorage.getItem(STORAGE_SESSION);
+        if(sessRaw) {
+            try {
+                const sess = JSON.parse(sessRaw);
+                if(quizzes.some(q=>q.id==sess.currentQuizId) && sess.teams?.length) {
+                    currentQuizId = sess.currentQuizId;
+                    currentTeams = sess.teams;
+                    currentTeamIndex = sess.currentTeamIndex;
+                    const quiz = quizzes.find(q=>q.id==currentQuizId);
+                    if(quiz && sess.usedStates) {
+                        for(let ci=0; ci<quiz.categories.length && ci<sess.usedStates.length; ci++)
+                            for(let qi=0; qi<quiz.categories[ci].questions.length && qi<sess.usedStates[ci].length; qi++)
+                                quiz.categories[ci].questions[qi].isUsed = sess.usedStates[ci][qi];
+                    }
+                    return true;
+                }
+            } catch(e) {}
+        }
+        return false;
+    }
+
+    function initDefaultTeams() { return [{ name: "Команда 1", score: 0 }, { name: "Команда 2", score: 0 }]; }
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
+
+    function nextTeam() {
+        if (currentTeams.length === 0) return;
+        currentTeamIndex = (currentTeamIndex + 1) % currentTeams.length;
+    }
+
+    function renderAll() {
+        if(!currentQuizId) return;
+        const quiz = quizzes.find(q=>q.id==currentQuizId);
+        if(quiz) {
+            document.getElementById("currentQuizNameBadge").innerText = quiz.name;
+            renderTeamsPanel();
+            renderGameGrid(quiz);
+        }
+    }
+
+    function renderTeamsPanel() {
+        const container = document.getElementById("teamsContainer");
+        container.innerHTML = "";
+        currentTeams.forEach((team, idx) => {
+            const card = document.createElement("div");
+            card.className = `team-card ${idx===currentTeamIndex?'active':''}`;
+            card.innerHTML = `
+                <div class="team-name">${escapeHtml(team.name)}</div>
+                <div class="team-score">${team.score}</div>
+                <div class="team-actions">
+                    <button data-team-idx="${idx}" class="setActiveTeamBtn">🎯 Сделать текущей</button>
+                    <button data-team-idx="${idx}" class="changeScoreBtn">💰 +/‑</button>
+                    <button data-team-idx="${idx}" class="removeTeamBtn" ${currentTeams.length<=1?'disabled':''}>❌</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+        document.querySelectorAll(".setActiveTeamBtn").forEach(btn=>btn.addEventListener("click",()=>{ let idx=parseInt(btn.dataset.teamIdx); if(!isNaN(idx)){ currentTeamIndex=idx; renderAll(); saveSession(); }}));
+        document.querySelectorAll(".changeScoreBtn").forEach(btn=>btn.addEventListener("click",async()=>{
+            let idx=parseInt(btn.dataset.teamIdx);
+            let delta = await customPrompt("Изменить очки (введите число, например +200 или -100)", "0");
+            if(delta !== null) { let val=parseInt(delta); if(!isNaN(val)) currentTeams[idx].score+=val; else await customAlert("Введите число","Ошибка"); renderAll(); saveSession(); }
+        }));
+        document.querySelectorAll(".removeTeamBtn").forEach(btn=>btn.addEventListener("click",()=>{
+            let idx=parseInt(btn.dataset.teamIdx);
+            if(currentTeams.length<=1){ customAlert("Должна быть минимум одна команда"); return; }
+            currentTeams.splice(idx,1);
+            if(currentTeamIndex>=currentTeams.length) currentTeamIndex=currentTeams.length-1;
+            if(currentTeamIndex<0) currentTeamIndex=0;
+            renderAll(); saveSession();
+        }));
+    }
+
+    function renderGameGrid(quiz) {
+        const thead = document.getElementById("tableHeader");
+        const tbody = document.getElementById("tableBody");
+        thead.innerHTML = ""; tbody.innerHTML = "";
+        const cats = quiz.categories;
+        if(!cats.length) return;
+        const headerRow = document.createElement("tr");
+        cats.forEach(cat=>{ let th=document.createElement("th"); th.innerText=cat.name; headerRow.appendChild(th); });
+        thead.appendChild(headerRow);
+        const maxRows = Math.max(...cats.map(c=>c.questions.length),0);
+        for(let row=0; row<maxRows; row++){
+            const tr=document.createElement("tr");
+            for(let col=0; col<cats.length; col++){
+                const td=document.createElement("td");
+                const q=cats[col].questions[row];
+                if(q){
+                    td.innerText=q.value;
+                    if(q.isUsed){ td.classList.add("used"); td.innerText="✔️"; }
+                    else{ td.style.cursor="pointer"; td.addEventListener("click",(()=>openQuestion(col,row,q.value))); }
+                } else { td.innerText="—"; td.classList.add("used"); }
+                tr.appendChild(td);
+            }
+            tbody.appendChild(tr);
+        }
+    }
+
+    async function openQuestion(catIdx,qIdx,value) {
+    if(timerInterval) clearInterval(timerInterval);
+    const quiz = quizzes.find(q=>q.id==currentQuizId);
+    if(!quiz) return;
+    const question = quiz.categories[catIdx]?.questions[qIdx];
+    if(!question||question.isUsed) return;
+    activeQuestionData = {catIdx,qIdx,value,quizId:currentQuizId};
+    document.getElementById("modalCatName").innerHTML = `${quiz.categories[catIdx].name} — ${value} баллов`;
+    document.getElementById("modalQuestionText").innerText = question.text;
+    const mediaDiv = document.getElementById("modalMedia");
+    mediaDiv.innerHTML = "";
+
+    if(question.media && question.media.trim()){
+        const mediaValue = question.media.trim();
+        if (mediaValue.startsWith("db:")) {
+            try {
+                const blob = await mediaDB.getMedia(mediaValue);
+                if (blob) {
+                    const url = URL.createObjectURL(blob);
+                    const isVideo = blob.type.startsWith('video/') || mediaValue.startsWith('db:v_');
+                    if (isVideo) {
+                        const video = document.createElement('video');
+                        video.src = url;
+                        video.controls = true;
+                        video.preload = "auto";
+                        video.style.maxWidth = "100%";
+                        video.onerror = (e) => { video.style.display="none"; mediaDiv.innerHTML+="<p style='color:red'>⚠️ Видео не загружено. Возможно, формат не поддерживается браузером.</p>"; };
+                        video.load();
+                        mediaDiv.appendChild(video);
+                    } else {
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.alt = "Медиа";
+                        img.onerror = () => { img.style.display="none"; mediaDiv.innerHTML+="<p style='color:orange'>Изображение не загружено</p>"; };
+                        mediaDiv.appendChild(img);
+                    }
+                } else {
+                    // Файл не найден – удаляем битую ссылку и сообщаем
+                    question.media = "";
+                    saveQuizzesToLocal();
+                    mediaDiv.innerHTML = "<p style='color:orange'>⚠️ Медиафайл был удалён. Пожалуйста, загрузите его заново через редактор.</p>";
+                }
+            } catch (e) {
+                question.media = "";
+                saveQuizzesToLocal();
+                mediaDiv.innerHTML = "<p style='color:red'>Ошибка загрузки медиа. Ссылка очищена.</p>";
+            }
+        } else {
+            // Обработка обычных ссылок (YouTube, URL) остаётся без изменений
+            let url = mediaValue;
+            if(url.includes("youtube.com/watch")||url.includes("youtu.be")){
+                let videoId="";
+                if(url.includes("youtu.be")) videoId=url.split("/").pop().split("?")[0];
+                else if(url.includes("v=")) videoId=url.split("v=")[1].split("&")[0];
+                if(videoId){
+                    let iframe=document.createElement("iframe");
+                    iframe.src=`https://www.youtube.com/embed/${videoId}`;
+                    iframe.width="100%"; iframe.height="250"; iframe.allowFullscreen=true;
+                    mediaDiv.appendChild(iframe);
+                } else mediaDiv.innerHTML="<p style='color:orange'>Не удалось распознать YouTube</p>";
+            } else if(url.match(/\.(mp4|webm|ogg|mov|avi)(\?|#|$)/i)||url.startsWith("data:video/")){
+                let video=document.createElement("video");
+                video.src=url; video.controls=true; video.preload="auto"; video.style.maxWidth="100%";
+                video.onerror=()=>{ video.style.display="none"; mediaDiv.innerHTML+="<p style='color:red'>⚠️ Видео не загружено. Возможно, формат не поддерживается браузером.</p>"; };
+                video.load(); mediaDiv.appendChild(video);
+            } else {
+                let img=document.createElement("img");
+                img.src=url; img.alt="Медиа";
+                img.onerror=()=>{ img.style.display="none"; mediaDiv.innerHTML+="<p style='color:orange'>Изображение не загружено</p>"; };
+                mediaDiv.appendChild(img);
+            }
+        }
+    }
+
+    document.getElementById("answerText").innerText = question.answer;
+    document.getElementById("answerReveal").style.display = "none";
+    let timerSec = parseInt(document.getElementById("globalTimerSecMenu").value)||30;
+    document.getElementById("timerDisplay").innerText = timerSec;
+    timerSecondsLeft = timerSec;
+    if(timerInterval) clearInterval(timerInterval);
+    document.getElementById("correctAnswerBtn").disabled = false;
+    document.getElementById("wrongAnswerBtn").disabled = false;
+    document.getElementById("startTimerBtn").style.display = "inline-block";
+    document.getElementById("questionModal").style.display = "flex";
+}
+    function startTimerModal() {
+        if(timerInterval) clearInterval(timerInterval);
+        if(timerSecondsLeft<=0) return;
+        timerInterval=setInterval(()=>{
+            if(timerSecondsLeft<=1){
+                clearInterval(timerInterval); timerInterval=null;
+                document.getElementById("timerDisplay").innerText="0";
+                if(activeQuestionData){
+                    customAlert("⏰ Время вышло! Вопрос снимается, ход переходит.");
+                    const quizNow=quizzes.find(q=>q.id==activeQuestionData.quizId);
+                    if(quizNow){ const q=quizNow.categories[activeQuestionData.catIdx]?.questions[activeQuestionData.qIdx]; if(q && !q.isUsed) q.isUsed=true; }
+                    nextTeam();
+                    saveSession();
+                    closeModalAndRefresh();
+                }
+            } else { timerSecondsLeft--; document.getElementById("timerDisplay").innerText=timerSecondsLeft; }
+        },1000);
+    }
+
+    function closeModalAndRefresh() { if(timerInterval) clearInterval(timerInterval); document.getElementById("questionModal").style.display="none"; activeQuestionData=null; renderAll(); saveSession(); }
+
+    function answerCorrect() {
+        if(activeQuestionData){
+            const quiz=quizzes.find(q=>q.id==activeQuestionData.quizId);
+            if(quiz){
+                const q=quiz.categories[activeQuestionData.catIdx]?.questions[activeQuestionData.qIdx];
+                if(q&&!q.isUsed){
+                    if(currentTeams[currentTeamIndex]) currentTeams[currentTeamIndex].score+=activeQuestionData.value;
+                    q.isUsed=true;
+                    nextTeam();
+                    saveSession();
+                    closeModalAndRefresh();
+                }
+            }
+        }
+    }
+    function answerWrong() {
+        if(activeQuestionData){
+            const quiz=quizzes.find(q=>q.id==activeQuestionData.quizId);
+            if(quiz){
+                const q=quiz.categories[activeQuestionData.catIdx]?.questions[activeQuestionData.qIdx];
+                if(q) q.isUsed=true;
+                nextTeam();
+                saveSession();
+                closeModalAndRefresh();
+            }
+        }
+    }
+    
+    let editingQuizId=null;
+
+    function openEditor(quizId) {
+        const quiz = quizzes.find(q=>q.id==quizId);
+        if(!quiz) return;
+        editingQuizId=quizId;
+        document.getElementById("editQuizName").value=quiz.name;
+        const container=document.getElementById("categoriesEditorContainer");
+        container.innerHTML="";
+        quiz.categories.forEach((cat,idx)=>{
+            const catDiv=document.createElement("div"); catDiv.className="editor-category";
+            catDiv.innerHTML=`<strong>Категория ${idx+1}</strong> <input type="text" class="cat-name-input" value="${escapeHtml(cat.name)}" placeholder="Название категории" data-catidx="${idx}" style="width:70%"><button class="delCatBtn" data-catidx="${idx}">🗑 Удалить</button>`;
+            const questionsDiv=document.createElement("div");
+            cat.questions.forEach((q,qidx)=>{
+                const qDiv=document.createElement("div"); qDiv.className="question-row";
+                // Отображаем медиа-поле: если ключ db:, показываем упрощенно
+                let mediaDisplay = q.media;
+                if (mediaDisplay && mediaDisplay.startsWith("db:")) {
+                    mediaDisplay = "[Локальный файл]";
+                }
+                qDiv.innerHTML=`
+                    <input type="number" class="q-value" value="${q.value}" step="100" placeholder="Очки" data-cat="${idx}" data-qidx="${qidx}" style="width:85px">
+                    <input type="text" class="q-text" value="${escapeHtml(q.text)}" placeholder="Вопрос" data-cat="${idx}" data-qidx="${qidx}" style="min-width:200px">
+                    <input type="text" class="q-answer" value="${escapeHtml(q.answer)}" placeholder="Ответ" data-cat="${idx}" data-qidx="${qidx}">
+                    <input type="text" class="q-media" value="${escapeHtml(mediaDisplay)}" placeholder="Ссылка на медиа" data-cat="${idx}" data-qidx="${qidx}">
+                    <button class="uploadMediaBtn" data-cat="${idx}" data-qidx="${qidx}">📁 Загрузить</button>
+                    <button class="delQuestionBtn" data-cat="${idx}" data-qidx="${qidx}">❌</button>
+                `;
+                questionsDiv.appendChild(qDiv);
+            });
+            catDiv.appendChild(questionsDiv);
+            const addQBtn=document.createElement("button"); addQBtn.innerText="+ Добавить вопрос"; addQBtn.dataset.catidx=idx;
+            addQBtn.addEventListener("click",()=>{ quiz.categories[idx].questions.push({value:100,text:"Новый вопрос",answer:"Ответ",media:"",isUsed:false}); openEditor(quiz.id); });
+            catDiv.appendChild(addQBtn);
+            container.appendChild(catDiv);
+        });
+        attachEditorEvents(quiz);
+        document.getElementById("editorModal").style.display="flex";
+    }
+
+    function attachEditorEvents(quiz) {
+        document.querySelectorAll(".delCatBtn").forEach(btn=>btn.addEventListener("click",()=>{ let ci=parseInt(btn.dataset.catidx); if(quiz.categories.length>1){ quiz.categories.splice(ci,1); openEditor(quiz.id); } else customAlert("Нужна хотя бы одна категория"); }));
+        document.querySelectorAll(".delQuestionBtn").forEach(btn=>btn.addEventListener("click",()=>{ let qi=parseInt(btn.dataset.qidx); quiz.categories.forEach(cat => cat.questions.splice(qi, 1)); openEditor(quiz.id); }));
+        document.querySelectorAll(".uploadMediaBtn").forEach(btn=>btn.addEventListener("click",async()=>{
+            let ci=parseInt(btn.dataset.cat), qi=parseInt(btn.dataset.qidx);
+            let question=quiz.categories[ci].questions[qi];
+            // Предлагаем ввести URL или загрузить файл
+            let userURL = await customPrompt("Введите URL видео/изображения (Enter) или нажмите Отмена для выбора файла:", question.media && !question.media.startsWith("db:") ? question.media : "");
+            if(userURL !== null && userURL.trim() !== "") {
+                // Удаляем старый локальный файл из IndexedDB, если был
+                if (question.media && question.media.startsWith("db:")) {
+                    await mediaDB.deleteMedia(question.media).catch(()=>{});
+                }
+                question.media = userURL.trim();
+                openEditor(quiz.id);
+                return;
+            }
+            // Загрузка файла
+            const fileInput=document.createElement("input");
+            fileInput.type="file";
+            fileInput.accept="image/*,video/*";
+            fileInput.onchange=async (ev)=>{
+                const file=ev.target.files[0];
+                if(!file) return;
+                if(file.size > 20 * 1024 * 1024){
+                    await customAlert("Файл слишком большой (>20 МБ). Пожалуйста, используйте ссылку.");
+                    return;
+                }
+                // Удаляем старое медиа из IndexedDB
+                if (question.media && question.media.startsWith("db:")) {
+                    await mediaDB.deleteMedia(question.media).catch(()=>{});
+                }
+                // Сохраняем как Blob в IndexedDB
+                const prefix = file.type.startsWith('video/') ? 'db:v_' : 'db:i_';
+                const mediaId = prefix + Date.now() + '_' + Math.random().toString(36);
+                try {
+                    await mediaDB.saveMedia(mediaId, file);
+                    question.media = mediaId;
+                    openEditor(quiz.id);
+                } catch (e) {
+                    await customAlert('Ошибка сохранения медиафайла: ' + e.message);
+                }
+            };
+            fileInput.click();
+        }));
+    }
+
+    function saveCurrentEditor() {
+        if(!editingQuizId) return;
+        const quiz=quizzes.find(q=>q.id==editingQuizId);
+        if(!quiz) return;
+        quiz.name=document.getElementById("editQuizName").value;
+        document.querySelectorAll(".cat-name-input").forEach(inp=>{ let ci=parseInt(inp.dataset.catidx); if(quiz.categories[ci]) quiz.categories[ci].name=inp.value; });
+        document.querySelectorAll(".q-value").forEach(inp=>{ let ci=parseInt(inp.dataset.cat), qi=parseInt(inp.dataset.qidx); if(quiz.categories[ci]?.questions[qi]) quiz.categories[ci].questions[qi].value=parseInt(inp.value)||100; });
+        document.querySelectorAll(".q-text").forEach(inp=>{ let ci=parseInt(inp.dataset.cat), qi=parseInt(inp.dataset.qidx); if(quiz.categories[ci]?.questions[qi]) quiz.categories[ci].questions[qi].text=inp.value; });
+        document.querySelectorAll(".q-answer").forEach(inp=>{ let ci=parseInt(inp.dataset.cat), qi=parseInt(inp.dataset.qidx); if(quiz.categories[ci]?.questions[qi]) quiz.categories[ci].questions[qi].answer=inp.value; });
+        // Для медиа-поля: если пользователь стер значение или ввел новое, обрабатываем
+        document.querySelectorAll(".q-media").forEach(inp=>{ 
+            let ci=parseInt(inp.dataset.cat), qi=parseInt(inp.dataset.qidx); 
+            if(quiz.categories[ci]?.questions[qi]) {
+                let newMedia = inp.value.trim();
+                // Если было локальное, а стало пусто или другое – удалим старое из базы
+                const oldMedia = quiz.categories[ci].questions[qi].media;
+                if (oldMedia && oldMedia.startsWith("db:") && oldMedia !== newMedia && newMedia !== "[Локальный файл]") {
+                    mediaDB.deleteMedia(oldMedia).catch(()=>{});
+                }
+                if (newMedia === "" && oldMedia && oldMedia.startsWith("db:")) {
+                    quiz.categories[ci].questions[qi].media = "";
+                } else if (newMedia !== "[Локальный файл]") {
+                    quiz.categories[ci].questions[qi].media = newMedia;
+                }
+            }
+        });
+        saveQuizzesToLocal();
+        if(currentQuizId==editingQuizId) renderAll();
+        closeEditor();
+    }
+
+    function closeEditor() { document.getElementById("editorModal").style.display="none"; editingQuizId=null; }
+    function addCategoryInEditor() { const quiz=quizzes.find(q=>q.id==editingQuizId); if(quiz){ quiz.categories.push({name:"Новая категория",questions:[{value:100,text:"Пример",answer:"Ответ",media:"",isUsed:false}]}); openEditor(editingQuizId); } }
+    async function newQuiz() {
+        let name = await customPrompt("Название викторины", "Моя викторина");
+        if(!name) return;
+        const newId=Date.now();
+        quizzes.push({ id:newId, name:name, categories:[{name:"Категория 1",questions:[{value:100,text:"Вопрос 100",answer:"Ответ 1",media:"",isUsed:false},{value:200,text:"Вопрос 200",answer:"Ответ 2",media:"",isUsed:false}]},{name:"Категория 2",questions:[{value:100,text:"Вопрос 100",answer:"Ответ 1",media:"",isUsed:false}]}] });
+        saveQuizzesToLocal();
+        currentQuizId=newId;
+        currentTeams=initDefaultTeams();
+        currentTeamIndex=0;
+        saveSession();
+        renderQuizSelectMenu();
+        renderAll();
+    }
+    function renderQuizSelectMenu() {
+        const select=document.getElementById("quizSelectMenu");
+        select.innerHTML="";
+        quizzes.forEach(q=>{ let opt=document.createElement("option"); opt.value=q.id; opt.innerText=q.name; if(currentQuizId==q.id) opt.selected=true; select.appendChild(opt); });
+    }
+    async function deleteCurrentQuiz() {
+        if(!currentQuizId) return;
+        if(quizzes.length<=1){ await customAlert("Нельзя удалить последнюю викторину"); return; }
+        // Удаляем связанные медиа из IndexedDB
+        const quizToDelete = quizzes.find(q=>q.id==currentQuizId);
+        if (quizToDelete) {
+            for (let cat of quizToDelete.categories) {
+                for (let q of cat.questions) {
+                    if (q.media && q.media.startsWith("db:")) {
+                        await mediaDB.deleteMedia(q.media).catch(()=>{});
+                    }
+                }
+            }
+        }
+        quizzes=quizzes.filter(q=>q.id!=currentQuizId);
+        saveQuizzesToLocal();
+        currentQuizId=quizzes[0].id;
+        currentTeams=initDefaultTeams();
+        currentTeamIndex=0;
+        saveSession();
+        renderQuizSelectMenu();
+        renderAll();
+    }
+    function backupAll() {
+        // Предупреждаем, что локальные файлы не сохранятся
+        customAlert("Резервная копия сохранит только структуру викторины и ссылки. Загруженные файлы (видео/изображения) не включаются в JSON-файл.", "Внимание").then(()=>{
+            const dataStr=JSON.stringify(quizzes,null,2);
+            const blob=new Blob([dataStr],{type:"application/json"});
+            const a=document.createElement("a");
+            a.href=URL.createObjectURL(blob);
+            a.download=`svoya_backup_${new Date().toISOString().slice(0,19)}.json`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        });
+    }
+    function restoreFromFile(file) { 
+        const reader=new FileReader(); 
+        reader.onload= async (e)=>{ 
+            try{ 
+                const restored=JSON.parse(e.target.result); 
+                if(Array.isArray(restored) && restored.length && restored[0].categories){ 
+                    quizzes=restored; 
+                    saveQuizzesToLocal(); 
+                    if(!quizzes.some(q=>q.id==currentQuizId)) currentQuizId=quizzes[0].id; 
+                    currentTeams=initDefaultTeams(); 
+                    currentTeamIndex=0; 
+                    saveSession(); 
+                    renderQuizSelectMenu(); 
+                    renderAll(); 
+                    await customAlert("Восстановление успешно! Локальные медиафайлы не переносятся, их нужно загрузить заново."); 
+                } else await customAlert("Неверный формат файла"); 
+            } catch(err){ 
+                await customAlert("Ошибка чтения файла"); 
+            } 
+        }; 
+        reader.readAsText(file); 
+    }
+    function resetGameProgress() { if(currentQuizId){ const quiz=quizzes.find(q=>q.id==currentQuizId); if(quiz) quiz.categories.forEach(c=>c.questions.forEach(q=>q.isUsed=false)); currentTeams=currentTeams.map(t=>({...t,score:0})); currentTeamIndex=0; saveSession(); renderAll(); customAlert("Прогресс сброшен"); } }
+    async function addTeam() { let newName = await customPrompt("Название команды", "Новая команда"); if(newName) { currentTeams.push({ name: newName, score:0 }); renderAll(); saveSession(); } }
+
+    async function init() {
+        // Открываем базу IndexedDB заранее
+        try { await mediaDB.open(); } catch (e) { console.warn('IndexedDB не доступна', e); }
+        loadQuizzes();
+        const sessionLoaded=loadSession();
+        if(!sessionLoaded || !currentQuizId){ currentQuizId=quizzes[0]?.id||null; if(currentQuizId) currentTeams=initDefaultTeams(); currentTeamIndex=0; saveSession(); }
+        renderQuizSelectMenu();
+        renderAll();
+
+        document.getElementById("openMenuBtn").onclick=()=>document.getElementById("menuModal").style.display="flex";
+        document.getElementById("closeMenuBtn").onclick=()=>document.getElementById("menuModal").style.display="none";
+        document.getElementById("quizSelectMenu").addEventListener("change",(e)=>{ currentQuizId=parseInt(e.target.value); currentTeams=initDefaultTeams(); currentTeamIndex=0; const quiz=quizzes.find(q=>q.id==currentQuizId); if(quiz) quiz.categories.forEach(c=>c.questions.forEach(q=>q.isUsed=false)); saveSession(); renderAll(); document.getElementById("menuModal").style.display="none"; });
+        document.getElementById("newQuizMenuBtn").onclick=()=>{ newQuiz(); document.getElementById("menuModal").style.display="none"; };
+        document.getElementById("editQuizMenuBtn").onclick=()=>{ if(currentQuizId) openEditor(currentQuizId); document.getElementById("menuModal").style.display="none"; };
+        document.getElementById("deleteQuizMenuBtn").onclick=()=>{ deleteCurrentQuiz(); document.getElementById("menuModal").style.display="none"; };
+        document.getElementById("backupMenuBtn").onclick=()=>{ backupAll(); document.getElementById("menuModal").style.display="none"; };
+        document.getElementById("restoreMenuBtn").onclick=()=>{ document.getElementById("restoreFileInput").click(); document.getElementById("menuModal").style.display="none"; };
+        document.getElementById("restoreFileInput").onchange=(e)=>{ if(e.target.files.length) restoreFromFile(e.target.files[0]); e.target.value=''; };
+        document.getElementById("addTeamBtn").onclick=()=>addTeam();
+        document.getElementById("resetGameProgressBtn").onclick=()=>resetGameProgress();
+
+        document.getElementById("startTimerBtn").onclick=startTimerModal;
+        document.getElementById("showAnswerBtn").onclick=()=>document.getElementById("answerReveal").style.display="block";
+        document.getElementById("correctAnswerBtn").onclick=answerCorrect;
+        document.getElementById("wrongAnswerBtn").onclick=answerWrong;
+        document.getElementById("closeModalBtn").onclick=closeModalAndRefresh;
+        document.getElementById("saveQuizBtn").onclick=saveCurrentEditor;
+        document.getElementById("closeEditorBtn").onclick=closeEditor;
+        document.getElementById("addCategoryEditorBtn").onclick=addCategoryInEditor;
+    }
+    init();
+</script>
+</body>
+</html>
