@@ -187,7 +187,7 @@ function openEditor(quizId) {
         const nameSpan=document.createElement("span");
         nameSpan.className="editor-category-name";
         nameSpan.textContent=cat.name;
-        nameSpan.addEventListener("dblclick",(e)=>{
+        nameSpan.addEventListener("click",(e)=>{
             e.stopPropagation();
             const inp=document.createElement("input");
             inp.type="text"; inp.value=cat.name; inp.className="cat-name-input";
@@ -271,7 +271,7 @@ function openEditor(quizId) {
         addQBtn.style.marginTop = "8px";
         addQBtn.style.fontSize = "0.8rem";
         addQBtn.addEventListener("click", () => {
-            cat.questions.push({value:100, text:"Новый вопрос", answer:"Ответ", media:"", isUsed:false});
+            cat.questions.push({value:100, text:"Новый вопрос", answer:"", media:"", isUsed:false});
             openEditor(quiz.id);
         });
         body.appendChild(addQBtn);

@@ -52,7 +52,7 @@ function restoreFromFile(file) {
 function resetGameProgress() { resetProgress(); saveSession(); renderAll(); customAlert("Прогресс сброшен"); }
 
 async function addTeam() {
-    const newName = await customPrompt("Название команды", "Новая команда", "Введите название");
+    const newName = await customPrompt("Название команды", "", "Введите название");
     if(newName && newName.trim()) { addTeamToGame(newName.trim()); renderAll(); saveSession(); }
     else if(newName !== null) { await customAlert("Введите название команды"); }
 }
