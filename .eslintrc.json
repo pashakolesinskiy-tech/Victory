@@ -1,0 +1,22 @@
+{
+  "env": {
+    "browser": true,
+    "es2022": true
+  },
+  "globals": {
+    "mediaDB": "readonly"
+  },
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "script"
+  },
+  "rules": {
+    "eqeqeq": ["error", "always"],
+    "no-unused-vars": "off",
+    "no-undef": "off",
+    "no-redeclare": "off",
+    "curly": ["warn", "multi-line"],
+    "no-var": "warn",
+    "prefer-const": "off"
+  }
+}

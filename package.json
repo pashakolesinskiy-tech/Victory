@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "start": "npx serve .",
+    "lint": "eslint *.js",
+    "lint:fix": "eslint *.js --fix"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1"
+  }
+}
