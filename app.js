@@ -156,9 +156,11 @@ function closeTutorial() {
 // ---------- ИНИЦИАЛИЗАЦИЯ ----------
 async function init() {
     try { await mediaDB.open(); } catch (e) { console.warn('IndexedDB не доступна', e); }
+    loadSettings();
     loadQuizzes();
     const sessionLoaded=loadSession();
     if(!sessionLoaded || !currentQuizId){ currentQuizId=quizzes[0]?.id||null; if(currentQuizId) currentTeams=createDefaultTeams(); currentTeamIndex=0; saveSession(); }
+    document.getElementById("globalTimerSecMenu").value = timerDuration;
     renderQuizSelectMenu(); renderAll();
 
     if(hostMode) {
@@ -199,10 +201,10 @@ async function init() {
         document.getElementById("showAnswerBtn").style.display=hostMode?"inline-block":"none";
         document.getElementById("correctAnswerBtn").style.display=hostMode?"inline-block":"none";
         document.getElementById("wrongAnswerBtn").style.display=hostMode?"inline-block":"none";
-        saveSession();
+        saveSettings();
     };
 
-    document.getElementById("globalTimerSecMenu").addEventListener("change", (e)=>{ timerDuration = parseInt(e.target.value)||30; saveSession(); });
+    document.getElementById("globalTimerSecMenu").addEventListener("change", (e)=>{ timerDuration = parseInt(e.target.value)||30; saveSettings(); });
 
     document.getElementById("resetGameProgressBtn").onclick=()=>resetGameProgress();
 
@@ -242,7 +244,7 @@ async function init() {
     document.getElementById("tutorialNextBtn").onclick=tutorialNext;
     document.getElementById("tutorialCloseBtn").onclick=closeTutorial;
 
-    // Save session before page unload
-    window.addEventListener("beforeunload", saveSession);
+    // Save session and settings before page unload
+    window.addEventListener("beforeunload", ()=>{ saveSession(); saveSettings(); });
 }
 init();

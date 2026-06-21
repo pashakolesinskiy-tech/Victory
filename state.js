@@ -81,6 +81,24 @@ let timerDuration = 30;
 
 const STORAGE_QUIZZES = "svoya_quizzes";
 const STORAGE_SESSION = "svoya_session";
+const STORAGE_SETTINGS = "svoya_settings";
+
+function saveSettings() {
+    try {
+        localStorage.setItem(STORAGE_SETTINGS, JSON.stringify({ timerDuration, hostMode }));
+    } catch (e) {}
+}
+
+function loadSettings() {
+    try {
+        const raw = localStorage.getItem(STORAGE_SETTINGS);
+        if (raw) {
+            const s = JSON.parse(raw);
+            if (s.timerDuration) timerDuration = s.timerDuration;
+            if (s.hostMode !== undefined) hostMode = s.hostMode;
+        }
+    } catch (e) {}
+}
 
 function saveQuizzesToLocal() {
     try {
@@ -112,7 +130,7 @@ function saveSession() {
     const quiz = quizzes.find(q => q.id === currentQuizId);
     if(!quiz) return;
     const usedStates = quiz.categories.map(cat => cat.questions.map(q => q.isUsed));
-    const sessionData = { currentQuizId, teams: currentTeams, currentTeamIndex, usedStates, timerDuration, hostMode };
+    const sessionData = { currentQuizId, teams: currentTeams, currentTeamIndex, usedStates };
     try {
         localStorage.setItem(STORAGE_SESSION, JSON.stringify(sessionData));
     } catch (e) {
@@ -129,8 +147,6 @@ function loadSession() {
                 currentQuizId = sess.currentQuizId;
                 currentTeams = sess.teams;
                 currentTeamIndex = sess.currentTeamIndex;
-                if(sess.timerDuration) { timerDuration = sess.timerDuration; document.getElementById("globalTimerSecMenu").value = timerDuration; }
-                if(sess.hostMode !== undefined) hostMode = sess.hostMode;
                 const quiz = quizzes.find(q=>q.id===currentQuizId);
                 if(quiz && sess.usedStates) {
                     for(let ci=0; ci<quiz.categories.length && ci<sess.usedStates.length; ci++) {
