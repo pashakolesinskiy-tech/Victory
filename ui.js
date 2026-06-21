@@ -272,7 +272,7 @@ function openEditor(quizId) {
         addQBtn.style.fontSize = "0.8rem";
         addQBtn.addEventListener("click", () => {
             syncEditorToModel();
-            cat.questions.push({value:100, text:"Новый вопрос", answer:"", media:"", isUsed:false});
+            cat.questions.push({value:100, text:"", answer:"", media:"", isUsed:false});
             openEditor(quiz.id);
         });
         body.appendChild(addQBtn);

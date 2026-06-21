@@ -380,13 +380,13 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
     position: absolute;
     bottom: 0;
     left: 0;
-    height: 4px;
-    background: var(--primary);
+    height: 6px;
     width: 100%;
     transition: width 0.1s linear;
+    background: #22c55e;
 }
 .timer-bar.running {
-    transition: width 1s linear;
+    transition: width 1s linear, background-color 1s linear;
 }
 #answerReveal {
     margin-top: 12px;

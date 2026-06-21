@@ -1,4 +1,20 @@
 // ---------- ИГРОВАЯ ЛОГИКА ----------
+let timerAudioCtx = null;
+function playTick() {
+    try {
+        if (!timerAudioCtx) timerAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = timerAudioCtx.createOscillator();
+        const gain = timerAudioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(timerAudioCtx.destination);
+        osc.frequency.value = 880;
+        osc.type = "sine";
+        gain.gain.setValueAtTime(0.3, timerAudioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, timerAudioCtx.currentTime + 0.1);
+        osc.start();
+        osc.stop(timerAudioCtx.currentTime + 0.1);
+    } catch(e) {}
+}
 async function openQuestion(catIdx,qIdx,value) {
     if(timerInterval) clearInterval(timerInterval);
     const quiz = quizzes.find(q=>q.id===currentQuizId);
@@ -104,34 +120,66 @@ async function openQuestion(catIdx,qIdx,value) {
     timerBar.classList.remove("running");
     timerBar.style.transition = "none";
     timerBar.style.width = "100%";
+    timerBar.style.backgroundColor = "#22c55e";
     void timerBar.offsetWidth;
 
     document.getElementById("correctAnswerBtn").disabled = false;
     document.getElementById("wrongAnswerBtn").disabled = false;
     document.getElementById("startTimerBtn").style.display = "inline-block";
+    document.getElementById("startTimerBtn").textContent = "▶️ Старт";
+    document.getElementById("pauseTimerBtn").style.display = "none";
     document.getElementById("questionModal").style.display = "flex";
 }
 
 function startTimerModal() {
     if(timerInterval) clearInterval(timerInterval);
     if(timerSecondsLeft<=0) return;
+    const totalSec = timerSecondsLeft;
 
     const timerBar = document.getElementById("timerBar");
     timerBar.classList.add("running");
     void timerBar.offsetWidth;
+    timerBar.style.transition = "width " + timerSecondsLeft + "s linear";
     timerBar.style.width = "0%";
+
+    function updateBarColor() {
+        const pct = timerSecondsLeft / totalSec;
+        const hue = Math.round(pct * 120);
+        timerBar.style.backgroundColor = "hsl(" + hue + ", 80%, 45%)";
+    }
+    updateBarColor();
+
+    document.getElementById("startTimerBtn").style.display = "none";
+    document.getElementById("pauseTimerBtn").style.display = "inline-block";
 
     timerInterval=setInterval(()=>{
         if(timerSecondsLeft<=1){
             clearInterval(timerInterval); timerInterval=null;
             document.getElementById("timerDisplay").innerText="0";
+            document.getElementById("pauseTimerBtn").style.display = "none";
             if(activeQuestionData){
                 customAlert("Время вышло! Вопрос снимается.");
                 markQuestionUsed(activeQuestionData.quizId, activeQuestionData.catIdx, activeQuestionData.qIdx);
                 nextTeam(); saveSession(); closeModalAndRefresh();
             }
-        } else { timerSecondsLeft--; document.getElementById("timerDisplay").innerText=timerSecondsLeft; }
+        } else { timerSecondsLeft--; document.getElementById("timerDisplay").innerText=timerSecondsLeft; updateBarColor(); if(timerSecondsLeft<=5) playTick(); }
     },1000);
+}
+
+function pauseTimer() {
+    if(!timerInterval) return;
+    clearInterval(timerInterval);
+    timerInterval = null;
+
+    const timerBar = document.getElementById("timerBar");
+    timerBar.classList.remove("running");
+    const computed = getComputedStyle(timerBar);
+    timerBar.style.transition = "none";
+    timerBar.style.width = computed.width;
+
+    document.getElementById("startTimerBtn").style.display = "inline-block";
+    document.getElementById("startTimerBtn").textContent = "▶️ Продолжить";
+    document.getElementById("pauseTimerBtn").style.display = "none";
 }
 
 function closeModalAndRefresh() {

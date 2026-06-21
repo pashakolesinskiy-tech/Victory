@@ -65,6 +65,14 @@ async function init() {
     if(!sessionLoaded || !currentQuizId){ currentQuizId=quizzes[0]?.id||null; if(currentQuizId) currentTeams=createDefaultTeams(); currentTeamIndex=0; saveSession(); }
     renderQuizSelectMenu(); renderAll();
 
+    if(hostMode) {
+        document.getElementById("hostModeToggle").classList.add("active");
+        document.getElementById("hostModeIndicator").style.display = "inline";
+        document.getElementById("showAnswerBtn").style.display = "inline-block";
+        document.getElementById("correctAnswerBtn").style.display = "inline-block";
+        document.getElementById("wrongAnswerBtn").style.display = "inline-block";
+    }
+
     document.getElementById("openMenuBtn").onclick=()=>document.getElementById("menuModal").style.display="flex";
     document.getElementById("closeMenuBtn").onclick=()=>document.getElementById("menuModal").style.display="none";
     document.getElementById("menuModal").onclick=(e)=>{ if(e.target===e.currentTarget) e.currentTarget.style.display="none"; };
@@ -95,7 +103,10 @@ async function init() {
         document.getElementById("showAnswerBtn").style.display=hostMode?"inline-block":"none";
         document.getElementById("correctAnswerBtn").style.display=hostMode?"inline-block":"none";
         document.getElementById("wrongAnswerBtn").style.display=hostMode?"inline-block":"none";
+        saveSession();
     };
+
+    document.getElementById("globalTimerSecMenu").addEventListener("change", ()=>saveSession());
 
     document.getElementById("resetGameProgressBtn").onclick=()=>resetGameProgress();
 
@@ -105,6 +116,7 @@ async function init() {
 
     // Question modal
     document.getElementById("startTimerBtn").onclick=startTimerModal;
+    document.getElementById("pauseTimerBtn").onclick=pauseTimer;
     document.getElementById("showAnswerBtn").onclick=()=>document.getElementById("answerReveal").style.display="block";
     document.getElementById("correctAnswerBtn").onclick=answerCorrect;
     document.getElementById("wrongAnswerBtn").onclick=answerWrong;
