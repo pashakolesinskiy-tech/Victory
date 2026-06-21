@@ -135,5 +135,8 @@ async function init() {
 
     // ESC to close modals
     document.addEventListener("keydown",(e)=>{ if(e.key==="Escape"){ ["menuModal","questionModal","editorModal","teamActionsModal","customPromptModal","customAlertModal"].forEach(id=>{ const m=document.getElementById(id); if(m && m.style.display==="flex"){ m.style.display="none"; } }); } });
+
+    // Save session before page unload
+    window.addEventListener("beforeunload", saveSession);
 }
 init();
