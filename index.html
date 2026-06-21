@@ -51,6 +51,7 @@
                     <div style="display:flex;gap:6px;flex-wrap:wrap;">
                         <button id="backupMenuBtn" class="success">💾 Экспорт</button>
                         <button id="restoreMenuBtn" class="warning">📂 Импорт</button>
+                        <button id="aboutMenuBtn">ℹ️ О программе</button>
                     </div>
                 </div>
             </div>
@@ -165,6 +166,43 @@
             <button id="mediaUploadOk" class="success" style="width:100%;">OK — загрузить по ссылке</button>
             <button id="mediaUploadBrowse" style="width:100%;">📁 Обзор — выбрать файл</button>
             <button id="mediaUploadCancel" style="width:100%;">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<div id="aboutModal" class="modal">
+    <div class="modal-card" style="max-width:500px;">
+        <h3>О программе</h3>
+        <p style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:12px;">Своя Игра — интерактивная викторина для вечеров, вечеринок и обучения.</p>
+        <h4 style="margin-bottom:8px;">Возможности:</h4>
+        <ul class="about-features">
+            <li>Создание, редактирование и удаление викторин</li>
+            <li>Категории с произвольным количеством вопросов</li>
+            <li>Настраиваемая стоимость вопросов</li>
+            <li>Медиа: изображения, видео, аудио (YouTube, URL, файлы до 100 МБ)</li>
+            <li>Несколько команд с подсчётом очков</li>
+            <li>Таймер с визуальной полосой и звуковым сигналом</li>
+            <li>Пауза таймера</li>
+            <li>Режим ведущего (кнопки «Верно/Неверно», показ ответа)</li>
+            <li>Случайный порядок категорий и вопросов</li>
+            <li>Печать викторины</li>
+            <li>Экспорт и импорт викторин (JSON)</li>
+            <li>Автосохранение прогресса и настроек при перезагрузке</li>
+        </ul>
+        <div class="modal-buttons" style="flex-direction:column;gap:6px;">
+            <button id="startTutorialBtn" class="success" style="width:100%;">▶ Пройти обучение</button>
+            <button id="closeAboutBtn" style="width:100%;">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+<div id="tutorialOverlay" style="display:none;">
+    <div id="tutorialHighlight"></div>
+    <div id="tutorialTooltip">
+        <div id="tutorialText"></div>
+        <div style="display:flex;gap:6px;margin-top:10px;justify-content:flex-end;">
+            <button id="tutorialCloseBtn" style="font-size:0.8rem;padding:4px 12px;">Закрыть</button>
+            <button id="tutorialNextBtn" class="success" style="font-size:0.8rem;padding:4px 12px;">Далее →</button>
         </div>
     </div>
 </div>

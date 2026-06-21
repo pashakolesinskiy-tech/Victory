@@ -57,6 +57,102 @@ async function addTeam() {
     else if(newName !== null) { await customAlert("Введите название команды"); }
 }
 
+// ---------- ТУТОРИАЛ ----------
+let tutorialStep = 0;
+const tutorialSteps = [
+    { text: "Добро пожаловать в Своя Игра! Пройдём короткое обучение." },
+    { target: "#openMenuBtn", text: "Нажмите «Меню», чтобы управлять викторинами, настройками и данными." },
+    { target: "#tableBody", text: "Игровая сетка — нажмите на ячейку, чтобы выбрать вопрос нужной стоимости." },
+    { target: "#teamsContainer", text: "Панель команд — здесь отображаются команды и их очки. Нажмите на карточку для действий." },
+    { target: "#editQuizMenuBtn", text: "Редактор — создавайте и редактируйте категории, вопросы и медиа.", openMenu: true },
+    { target: "#hostModeToggle", text: "Режим ведущего — включите для кнопок «Верно/Неверно» и показа ответа.", openMenu: true },
+    { target: "#globalTimerSecMenu", text: "Настройте время таймера (от 5 до 300 секунд).", openMenu: true },
+    { target: "#backupMenuBtn", text: "Экспорт/импорт — сохраняйте викторины в файл и восстанавливайте их.", openMenu: true },
+    { text: "Готово! Приятной игры!" }
+];
+
+function startTutorial() {
+    tutorialStep = 0;
+    document.getElementById("tutorialOverlay").style.display = "block";
+    showTutorialStep();
+}
+
+function showTutorialStep() {
+    const step = tutorialSteps[tutorialStep];
+    const overlay = document.getElementById("tutorialOverlay");
+    const highlight = document.getElementById("tutorialHighlight");
+    const tooltip = document.getElementById("tutorialTooltip");
+    const textEl = document.getElementById("tutorialText");
+    const nextBtn = document.getElementById("tutorialNextBtn");
+
+    textEl.textContent = step.text;
+    nextBtn.textContent = tutorialStep < tutorialSteps.length - 1 ? "Далее →" : "Готово";
+
+    if (step.target) {
+        const el = document.querySelector(step.target);
+        if (el) {
+            if (step.openMenu) {
+                document.getElementById("menuModal").style.display = "flex";
+            }
+            const rect = el.getBoundingClientRect();
+            highlight.style.display = "block";
+            highlight.style.top = (rect.top - 6) + "px";
+            highlight.style.left = (rect.left - 6) + "px";
+            highlight.style.width = (rect.width + 12) + "px";
+            highlight.style.height = (rect.height + 12) + "px";
+
+            tooltip.classList.remove("tutorial-center");
+            tooltip.style.transform = "";
+            const tipW = 300, tipH = 130;
+            let top, left;
+            // Try below
+            if (rect.bottom + 20 + tipH < window.innerHeight) {
+                top = rect.bottom + 14;
+                left = rect.left + rect.width / 2 - tipW / 2;
+            }
+            // Try above
+            else if (rect.top - 20 - tipH > 0) {
+                top = rect.top - tipH - 14;
+                left = rect.left + rect.width / 2 - tipW / 2;
+            }
+            // Fallback: below, centered
+            else {
+                top = rect.bottom + 14;
+                left = (window.innerWidth - tipW) / 2;
+            }
+            // Keep within viewport horizontally
+            if (left < 10) left = 10;
+            if (left + tipW > window.innerWidth - 10) left = window.innerWidth - tipW - 10;
+            tooltip.style.top = top + "px";
+            tooltip.style.left = left + "px";
+        } else {
+            highlight.style.display = "none";
+            tooltip.classList.add("tutorial-center");
+            tooltip.style.top = "50%";
+            tooltip.style.left = "50%";
+            tooltip.style.transform = "translate(-50%,-50%)";
+        }
+    } else {
+        highlight.style.display = "none";
+        tooltip.classList.add("tutorial-center");
+        tooltip.style.top = "50%";
+        tooltip.style.left = "50%";
+        tooltip.style.transform = "translate(-50%,-50%)";
+    }
+}
+
+function tutorialNext() {
+    tutorialStep++;
+    if (tutorialStep >= tutorialSteps.length) { closeTutorial(); return; }
+    showTutorialStep();
+}
+
+function closeTutorial() {
+    document.getElementById("tutorialOverlay").style.display = "none";
+    document.getElementById("menuModal").style.display = "none";
+    document.getElementById("tutorialHighlight").style.display = "none";
+}
+
 // ---------- ИНИЦИАЛИЗАЦИЯ ----------
 async function init() {
     try { await mediaDB.open(); } catch (e) { console.warn('IndexedDB не доступна', e); }
@@ -134,7 +230,17 @@ async function init() {
     document.getElementById("customAlertModal").onclick=(e)=>{ if(e.target===e.currentTarget){ document.getElementById("alertOkBtn").click(); } };
 
     // ESC to close modals
-    document.addEventListener("keydown",(e)=>{ if(e.key==="Escape"){ ["menuModal","questionModal","editorModal","teamActionsModal","customPromptModal","customAlertModal"].forEach(id=>{ const m=document.getElementById(id); if(m && m.style.display==="flex"){ m.style.display="none"; } }); } });
+    document.addEventListener("keydown",(e)=>{ if(e.key==="Escape"){ ["menuModal","questionModal","editorModal","teamActionsModal","customPromptModal","customAlertModal","aboutModal"].forEach(id=>{ const m=document.getElementById(id); if(m && m.style.display==="flex"){ m.style.display="none"; } }); closeTutorial(); } });
+
+    // About modal
+    document.getElementById("aboutMenuBtn").onclick=()=>{ document.getElementById("menuModal").style.display="none"; document.getElementById("aboutModal").style.display="flex"; };
+    document.getElementById("closeAboutBtn").onclick=()=>document.getElementById("aboutModal").style.display="none";
+    document.getElementById("aboutModal").onclick=(e)=>{ if(e.target===e.currentTarget) e.currentTarget.style.display="none"; };
+
+    // Tutorial
+    document.getElementById("startTutorialBtn").onclick=()=>{ document.getElementById("aboutModal").style.display="none"; startTutorial(); };
+    document.getElementById("tutorialNextBtn").onclick=tutorialNext;
+    document.getElementById("tutorialCloseBtn").onclick=closeTutorial;
 
     // Save session before page unload
     window.addEventListener("beforeunload", saveSession);
