@@ -210,7 +210,7 @@ function openEditor(quizId) {
         delCatBtn.textContent="🗑";
         delCatBtn.style.padding="4px 8px";
         delCatBtn.style.fontSize="0.75rem";
-        delCatBtn.addEventListener("click",(e)=>{ e.stopPropagation(); if(quiz.categories.length>1){ removeCategory(quiz.id, idx); openEditor(quiz.id); } else customAlert("Нужна хотя бы одна категория"); });
+        delCatBtn.addEventListener("click",(e)=>{ e.stopPropagation(); if(quiz.categories.length>1){ syncEditorToModel(); removeCategory(quiz.id, idx); openEditor(quiz.id); } else customAlert("Нужна хотя бы одна категория"); });
         header.appendChild(delCatBtn);
 
         const body=document.createElement("div");
@@ -271,6 +271,7 @@ function openEditor(quizId) {
         addQBtn.style.marginTop = "8px";
         addQBtn.style.fontSize = "0.8rem";
         addQBtn.addEventListener("click", () => {
+            syncEditorToModel();
             cat.questions.push({value:100, text:"Новый вопрос", answer:"", media:"", isUsed:false});
             openEditor(quiz.id);
         });
@@ -332,7 +333,7 @@ function customMediaUpload(currentValue) {
 }
 
 function attachEditorEvents(quiz) {
-    document.querySelectorAll(".delQuestionBtn").forEach(btn=>btn.addEventListener("click",()=>{ const ci=parseInt(btn.dataset.cat), qi=parseInt(btn.dataset.qidx); removeQuestion(quiz.id, ci, qi); openEditor(quiz.id); }));
+    document.querySelectorAll(".delQuestionBtn").forEach(btn=>btn.addEventListener("click",()=>{ const ci=parseInt(btn.dataset.cat), qi=parseInt(btn.dataset.qidx); syncEditorToModel(); removeQuestion(quiz.id, ci, qi); openEditor(quiz.id); }));
     document.querySelectorAll(".uploadMediaBtn").forEach(btn=>btn.addEventListener("click",async()=>{
         const ci=parseInt(btn.dataset.cat), qi=parseInt(btn.dataset.qidx);
         const question=quiz.categories[ci].questions[qi];
@@ -340,6 +341,7 @@ function attachEditorEvents(quiz) {
         if (!result) return;
         if (result.type === "url") {
             if (question.media && question.media.startsWith("db:")) await mediaDB.deleteMedia(question.media).catch(()=>{});
+            syncEditorToModel();
             question.media = result.value;
             openEditor(quiz.id);
         } else {
@@ -352,7 +354,7 @@ function attachEditorEvents(quiz) {
             else if (file.type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|flac)$/i.test(fileName)) prefix = 'db:a_';
             else prefix = 'db:i_';
             const mediaId = prefix + Date.now() + '_' + Math.random().toString(36);
-            try { await mediaDB.saveMedia(mediaId, file); question.media = mediaId; openEditor(quiz.id); }
+            try { syncEditorToModel(); await mediaDB.saveMedia(mediaId, file); question.media = mediaId; openEditor(quiz.id); }
             catch (e) { await customAlert('Ошибка: ' + e.message); }
         }
     }));
