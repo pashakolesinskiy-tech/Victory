@@ -77,6 +77,7 @@ let timerInterval = null;
 let timerSecondsLeft = 0;
 let hostMode = false;
 let shuffleEnabled = false;
+let timerDuration = 30;
 
 const STORAGE_QUIZZES = "svoya_quizzes";
 const STORAGE_SESSION = "svoya_session";
@@ -111,7 +112,7 @@ function saveSession() {
     const quiz = quizzes.find(q => q.id === currentQuizId);
     if(!quiz) return;
     const usedStates = quiz.categories.map(cat => cat.questions.map(q => q.isUsed));
-    const sessionData = { currentQuizId, teams: currentTeams, currentTeamIndex, usedStates, timerSeconds: parseInt(document.getElementById("globalTimerSecMenu").value)||30, hostMode };
+    const sessionData = { currentQuizId, teams: currentTeams, currentTeamIndex, usedStates, timerDuration, hostMode };
     try {
         localStorage.setItem(STORAGE_SESSION, JSON.stringify(sessionData));
     } catch (e) {
@@ -128,7 +129,7 @@ function loadSession() {
                 currentQuizId = sess.currentQuizId;
                 currentTeams = sess.teams;
                 currentTeamIndex = sess.currentTeamIndex;
-                if(sess.timerSeconds) document.getElementById("globalTimerSecMenu").value = sess.timerSeconds;
+                if(sess.timerDuration) { timerDuration = sess.timerDuration; document.getElementById("globalTimerSecMenu").value = timerDuration; }
                 if(sess.hostMode !== undefined) hostMode = sess.hostMode;
                 const quiz = quizzes.find(q=>q.id===currentQuizId);
                 if(quiz && sess.usedStates) {

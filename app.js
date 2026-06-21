@@ -202,7 +202,7 @@ async function init() {
         saveSession();
     };
 
-    document.getElementById("globalTimerSecMenu").addEventListener("change", ()=>saveSession());
+    document.getElementById("globalTimerSecMenu").addEventListener("change", (e)=>{ timerDuration = parseInt(e.target.value)||30; saveSession(); });
 
     document.getElementById("resetGameProgressBtn").onclick=()=>resetGameProgress();
 

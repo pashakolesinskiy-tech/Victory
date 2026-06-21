@@ -111,7 +111,7 @@ async function openQuestion(catIdx,qIdx,value) {
     document.getElementById("correctAnswerBtn").style.display = hostMode ? "inline-block" : "none";
     document.getElementById("wrongAnswerBtn").style.display = hostMode ? "inline-block" : "none";
 
-    const timerSec = parseInt(document.getElementById("globalTimerSecMenu").value)||30;
+    const timerSec = timerDuration;
     document.getElementById("timerDisplay").innerText = timerSec;
     timerSecondsLeft = timerSec;
     if(timerInterval) clearInterval(timerInterval);
